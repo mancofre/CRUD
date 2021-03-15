@@ -5,13 +5,29 @@ import shortid from 'shortid';
 function App() {
   const [task, setTask] = useState("");
   const [tasks, setTasks] = useState([]);
+  const [editMode, setEditMode] = useState(false);
+  const [id, setId] = useState("");
+  const [error, setError] = useState("");
+
+  const validForm = () =>{
+    let isValid = true;
+    setError('');
+   
+    if(isEmpty(task)){
+      setError('Debes ingresar una tarea');
+      isValid = false;     
+    }
+
+    return isValid;
+
+  }
 
   const addTaks = (e) =>{
-    e.preventDefault();
-    if(isEmpty(task)){
-      console.log('el campo tarea está vacío.');
+    e.preventDefault(); 
+
+    if(!validForm()){
       return;
-    }
+    }  
 
     const newTak = {
       id: shortid.generate(),
@@ -20,12 +36,37 @@ function App() {
    
     setTasks([ ...tasks, newTak ]);
     setTask("");
-    console.log(tasks)
+    
   }
 
   const deleteTask = (id) =>{
     const filteredTasks = tasks.filter(t => t.id !== id);
     setTasks(filteredTasks);
+    if(filteredTasks.length === 0){
+      setTask("")
+    }
+    
+  }
+
+  const editTask = (task) =>{
+    setEditMode(true);
+    setId(task.id);
+    setTask(task.name)
+  }
+
+  const saveTask = (e) => {
+    e.preventDefault();
+    
+    if(!validForm()){
+      return;
+    } 
+
+    const editedTask = tasks.map(item => item.id === id ? {id, name: task} : item);
+    
+    setTasks(editedTask);
+    setTask("");
+    setEditMode(false);
+    setId("");
   }
 
   return (
@@ -37,7 +78,7 @@ function App() {
             <h4 className="text-center">Lista de Tareas</h4>
             { 
               (size(tasks) === 0) ? (
-                  <h5 className="text-center">Aun no hay tareas Programadas</h5>
+                  <li className="list-group-item">Aun no hay tareas Programadas</li>
               ) : (
                 <ul className="list-group">
                 {
@@ -50,7 +91,12 @@ function App() {
                           onClick={() => deleteTask(x.id)}>
                             Eliminar
                       </button>
-                      <button className="btn btn-warning btn-sm float-right">Editar</button>
+                      <button 
+                        className="btn btn-warning btn-sm float-right"
+                        onClick={() => editTask(x)}
+                        >
+                          Editar
+                      </button>
                     </li>
                   )                
                 }
@@ -60,18 +106,26 @@ function App() {
             }
         </div>
         <div className="col-4">
-        <h4 className="text-center">Formulario</h4>
-          <form onSubmit={addTaks}>
+        <h4 className="text-center">{editMode ? "Modificar Tarea" :"Agregar Tarea"}</h4>
+          <form onSubmit={editMode ? saveTask : addTaks}>
+            
             <input type="text"
               className="form-control mb-2"
               placeholder="Ingrese Tarea.."
               onChange={text => setTask(text.target.value)}
               value={task}
             />
+            
+          
             <button 
-                className="btn btn-dark btn-block"
+                className = {editMode ? "btn btn-warning btn-block" : "btn btn-dark btn-block"} 
                 type="submit"
-                >Agregar</button>
+                 >
+                  {editMode ? "Guardar" :"Agregar"}
+            </button><br/>
+            {
+              error && <span className='text-danger'>{error}</span>
+            }
           </form>
         </div>
         
