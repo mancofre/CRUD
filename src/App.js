@@ -1,6 +1,7 @@
 import { isEmpty, size } from 'lodash';
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import shortid from 'shortid';
+import { getCollection } from './actions';
 
 function App() {
   const [task, setTask] = useState("");
@@ -8,6 +9,14 @@ function App() {
   const [editMode, setEditMode] = useState(false);
   const [id, setId] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+   (async () =>{
+     const result = await getCollection('tasks');
+     setTasks(result.data)
+     console.log('el result es:', result)
+   })()
+  }, [])
 
   const validForm = () =>{
     let isValid = true;
@@ -85,6 +94,7 @@ function App() {
                   // eslint-disable-next-line array-callback-return
                   tasks.map((x) => 
                     <li className="list-group-item" key={x.id}>
+                      
                       <span className="lead">{x.name}</span>
                       <button 
                           className="btn btn-danger btn-sm float-right mx-2"
